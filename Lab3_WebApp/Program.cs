@@ -18,9 +18,11 @@ namespace Lab3_WebApp
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
+                .ConfigureAppConfiguration((context, builder)=> { builder.AddSystemsManager("/Lab3_WebApp"); }) // read credentials from parameter store (AWS Systems Manager)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
+                    webBuilder.UseDefaultServiceProvider(options => options.ValidateScopes = false);
                 });
     }
 }
