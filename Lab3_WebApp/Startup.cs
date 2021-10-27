@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -8,6 +9,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using Lab3_WebApp.Models;
+using Microsoft.Data.SqlClient;
+using Amazon.S3;
+using Amazon.DynamoDBv2;
+using Amazon.DynamoDBv2.DataModel;
 
 namespace Lab3_WebApp
 {
@@ -24,6 +31,30 @@ namespace Lab3_WebApp
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllersWithViews();
+            services.AddMvc();
+
+            // aws: RDS
+            // read credentials from parameter store (aws systems manager)
+            var builder = new SqlConnectionStringBuilder(Configuration.GetConnectionString("Connection2RDS"))
+            {
+                UserID = Configuration["DbUser"],
+                Password = Configuration["DbPassword"]
+            };
+            var connection = builder.ConnectionString;
+            services.AddDbContext<IdentityAppContext>(options => options.UseSqlServer(connection));
+
+            // aws: s3, dynamodb
+            services.AddDefaultAWSOptions(Configuration.GetAWSOptions());
+            services.AddAWSService<IAmazonS3>();
+            services.AddAWSService<IAmazonDynamoDB>();
+            services.AddTransient<IDynamoDBContext, DynamoDBContext>();
+
+            // Identity
+            services.AddIdentity<AppUser, AppRole>(options =>
+            {
+                options.User.RequireUniqueEmail = true;
+            }).AddEntityFrameworkStores<IdentityAppContext>();
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -41,6 +72,7 @@ namespace Lab3_WebApp
             }
             app.UseHttpsRedirection();
             app.UseStaticFiles();
+            app.UseAuthentication();
 
             app.UseRouting();
 
@@ -52,6 +84,9 @@ namespace Lab3_WebApp
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");
             });
+
+            IdentitySeedData.EnsurePopulated(app);
+            SeedData.EnsurePopulated(app);
         }
     }
 }
