@@ -15,7 +15,6 @@ namespace Lab3_WebApp.Models
     public static class SeedData
     {
         const string TABLE_NAME_MOVIE = "Movie";
-        const string TABLE_NAME_REVIEW = "Review";
         static IAmazonDynamoDB dynamoDB;
         static IDynamoDBContext dynamoDBContext;
 
@@ -48,10 +47,9 @@ namespace Lab3_WebApp.Models
                 WriteCapacityUnits = 1
             };
 
-            bool isCreated = CreateTable_async(TABLE_NAME_MOVIE, attributeDefinition_movie, keySchemaElements_movie, provisionedThroughput).Result;
-            //CreateTable_async(TABLE_NAME_REVIEW, attributeDefinition_review, keySchemaElements_review, provisionedThroughput);
+            bool isActive = CreateTable_async(TABLE_NAME_MOVIE, attributeDefinition_movie, keySchemaElements_movie, provisionedThroughput).Result;
 
-            if(isCreated)
+            if(isActive)
             {
                 if (CheckTableStatus(TABLE_NAME_MOVIE).Result)
                 {

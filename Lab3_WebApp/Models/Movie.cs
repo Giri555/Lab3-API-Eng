@@ -6,7 +6,7 @@ using Amazon.DynamoDBv2.DataModel;
 
 namespace Lab3_WebApp.Models
 {
-    [DynamoDBTable("Movie")]
+    [DynamoDBTable("Movie")]        // initial model -- ** needs redesign **
     public class Movie
     {
         [DynamoDBHashKey]
