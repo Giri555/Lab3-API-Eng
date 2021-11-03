@@ -33,6 +33,45 @@ namespace Lab3_WebApp.Controllers
             return View(movies);
         }
 
+        [HttpGet]
+        [Route("Create")]
+        public IActionResult Create()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [Route("Create")]
+        public async Task<IActionResult> Create(Movie newMovie)
+        {
+            await DynamoDBContext.SaveAsync<Movie>(newMovie);
+            return RedirectToAction("Index");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Update(Movie movie)
+        {
+            Movie updatingMovie = await DynamoDBContext.LoadAsync<Movie>(movie.Title);
+            updatingMovie.Title = movie.Title;
+            await DynamoDBContext.SaveAsync(updatingMovie);
+            return RedirectToAction("Index");
+        }
+
+        [HttpGet]
+        [Route("Edit/{movieTitle}")]
+        public async Task<ActionResult> Edit(String title)
+        {
+            var movie = await DynamoDBContext.LoadAsync<Movie>(title);
+
+            ViewBag.Title = title;
+
+            return View();
+        }
+
+      
+
+
+        [HttpDelete]
         public async Task<IActionResult> Delete(string title)
         {
             await DynamoDBContext.DeleteAsync<Movie>(title);

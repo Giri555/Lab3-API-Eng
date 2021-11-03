@@ -6,7 +6,7 @@
 <h1>Movies</h1>
 
 <p>
-    <a class="btn btn-success" asp-action="Create">Create New</a>
+    <a class="btn btn-success" asp-action="Create">Create New Movie</a>
 </p>
 <table class="table">
     <thead>
@@ -51,15 +51,15 @@
                     @Html.DisplayFor(modelItem => item.Budget)
                 </td>
                 <td>
-                    <a class="btn btn-primary" asp-action="Download" asp-route-id="@item.Title">Download</a>
+                    <a class="btn btn-primary" asp-action="Download" asp-route-id="@item.Id">Download</a>
                 </td>
                 <td>
-                    <a class="btn btn-info" asp-action="Details" asp-route-id="@item.Title">Details</a>
+                    <a class="btn btn-info" asp-action="Details" asp-route-id="@item.Id">Details</a>
                 </td>
                 <td>
                     <div>
-                        <a class="btn btn-warning" asp-action="Edit" asp-route-id="@item.Title">Edit</a>
-                        <a class="btn btn-danger" asp-controller="Movie" asp-action="Delete" asp-route-title="@item.Title" method="post">Delete</a>
+                        <a class="btn btn-warning" asp-action="Edit" asp-route-id="@item.Id">Edit</a>
+                        <a class="btn btn-danger" asp-controller="Movie" asp-action="Delete" asp-route-id="@item.Id" method="post">Delete</a>
                     </div>
                 </td>
             </tr>
