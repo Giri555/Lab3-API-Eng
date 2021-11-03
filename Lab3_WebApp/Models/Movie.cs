@@ -25,6 +25,9 @@ namespace Lab3_WebApp.Models
         public string ReleaseDate { get; set; }
 
         [DynamoDBProperty]
+        public Dictionary<string, string> Comments { get; set; }
+
+        [DynamoDBProperty]
         public int Budget { get; set; }
 
         public Movie() { }
