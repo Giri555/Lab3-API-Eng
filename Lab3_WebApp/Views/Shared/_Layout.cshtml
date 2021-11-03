@@ -24,7 +24,13 @@
                         @if (User.Identity.IsAuthenticated)
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Movie" asp-action="Index">Movies</a>
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Movie" asp-action="Other">Other Movies</a>
+                            </li>
+                        }
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Movie" asp-action="Index">My Movies</a>
                             </li>
                         }
                     </ul>

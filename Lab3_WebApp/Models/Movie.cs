@@ -12,13 +12,10 @@ namespace Lab3_WebApp.Models
         [DynamoDBHashKey]
         public string Id { get; set; }
 
-        [DynamoDBRangeKey]
-        public string UserId { get; set; }
-
         [DynamoDBProperty]
         public string Title { get; set; }
 
-        [DynamoDBProperty]
+        [DynamoDBRangeKey]
         public string Username { get; set; }
 
         [DynamoDBProperty]
@@ -32,10 +29,9 @@ namespace Lab3_WebApp.Models
 
         public Movie() { }
 
-        public Movie(string id, string userId, string title, string username, string cast, string releaseDate, int budget)
+        public Movie(string id, string title, string username, string cast, string releaseDate, int budget)
         {
             Id = id;
-            UserId = userId;
             Title = title;
             Username = username;
             Cast = cast;
