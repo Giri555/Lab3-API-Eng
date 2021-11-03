@@ -30,7 +30,7 @@
                 View Details
             </th>
             <th>
-                Edit/Delete
+                Action
             </th>
         </tr>
     </thead>
@@ -58,8 +58,8 @@
                 </td>
                 <td>
                     <div>
-                        <a class="btn btn-warning" asp-action="Edit" asp-route-id="@item.Id">Edit</a>
-                        <a class="btn btn-danger" asp-controller="Movie" asp-action="Delete" asp-route-id="@item.Id" method="post">Delete</a>
+                        <a class="btn btn-warning" asp-action="Edit" asp-controller="Movie" asp-route-id="@item.Id">Edit</a>
+                        <a class="btn btn-danger" asp-action="Delete" asp-controller="Movie" asp-route-id="@item.Id">Delete</a>
                     </div>
                 </td>
             </tr>

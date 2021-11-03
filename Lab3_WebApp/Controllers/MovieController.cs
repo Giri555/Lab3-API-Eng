@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Lab3_WebApp.Models;
+using Microsoft.AspNetCore.Identity;
 
 namespace Lab3_WebApp.Controllers
 {
@@ -17,19 +18,39 @@ namespace Lab3_WebApp.Controllers
         IAmazonDynamoDB DynamoDBClient { get; set; }
         IDynamoDBContext DynamoDBContext { get; set; }
 
-        public MovieController(IAmazonS3 s3Client, IAmazonDynamoDB dynamoDB, IDynamoDBContext dynamoDBContext)
+        private UserManager<AppUser> userManager;
+       // private AppUser user;
+        public MovieController(IAmazonS3 s3Client, IAmazonDynamoDB dynamoDB, IDynamoDBContext dynamoDBContext, UserManager<AppUser> userManager)
         {
             S3Client = s3Client;
             DynamoDBClient = dynamoDB;
             DynamoDBContext = dynamoDBContext;
+            this.userManager = userManager;
         }
 
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            var scanConditions = new List<ScanCondition>() { new ScanCondition("Title", ScanOperator.IsNotNull) };
+            var userName = userManager.GetUserId(HttpContext.User);
+            AppUser user = userManager.FindByIdAsync(userName).Result;
+
+            var scanConditions = new List<ScanCondition>() { new ScanCondition("Id", ScanOperator.IsNotNull), new ScanCondition("Username", ScanOperator.Equal, user.Email) };
             var searchResults = DynamoDBContext.ScanAsync<Movie>(scanConditions, null);
             List<Movie> movies = await searchResults.GetNextSetAsync();
+           
+            return View(movies);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Other()
+        {
+            var userName = userManager.GetUserId(HttpContext.User);
+            AppUser user = userManager.FindByIdAsync(userName).Result;
+
+            var scanConditions = new List<ScanCondition>() { new ScanCondition("Id", ScanOperator.IsNotNull), new ScanCondition("Username", ScanOperator.NotEqual, user.Email) };
+            var searchResults = DynamoDBContext.ScanAsync<Movie>(scanConditions, null);
+            List<Movie> movies = await searchResults.GetNextSetAsync();
+
             return View(movies);
         }
 
@@ -44,39 +65,50 @@ namespace Lab3_WebApp.Controllers
         [Route("Create")]
         public async Task<IActionResult> Create(Movie newMovie)
         {
+            var userName = userManager.GetUserId(HttpContext.User);
+            AppUser user = userManager.FindByIdAsync(userName).Result;
+            newMovie.Id = Guid.NewGuid().ToString();
+            newMovie.Username = user.Email;
             await DynamoDBContext.SaveAsync<Movie>(newMovie);
             return RedirectToAction("Index");
         }
 
         [HttpGet]
-        public async Task<IActionResult> Update(Movie movie)
+        [Route("Edit/{id}")]
+        public async Task<ActionResult> Edit(String id)
         {
-            Movie updatingMovie = await DynamoDBContext.LoadAsync<Movie>(movie.Title);
+            var userName = userManager.GetUserId(HttpContext.User);
+            AppUser user = userManager.FindByIdAsync(userName).Result;
+            var movie = await DynamoDBContext.LoadAsync<Movie>(id, user.Email);
+            ViewBag.Id = id;
+
+            return View("Edit", movie);
+        }
+
+        [HttpPost]
+        [Route("Edit/{id}")]
+        public async Task<ActionResult> Edit(Movie movie)
+        {
+            var userName = userManager.GetUserId(HttpContext.User);
+            AppUser user = userManager.FindByIdAsync(userName).Result;
+            var updatingMovie = await DynamoDBContext.LoadAsync<Movie>(movie.Id, user.Email);
             updatingMovie.Title = movie.Title;
+            updatingMovie.Cast = movie.Cast;
+            updatingMovie.Budget = movie.Budget;
+            updatingMovie.ReleaseDate = movie.ReleaseDate;
             await DynamoDBContext.SaveAsync(updatingMovie);
             return RedirectToAction("Index");
         }
 
         [HttpGet]
-        [Route("Edit/{movieTitle}")]
-        public async Task<ActionResult> Edit(String title)
+        [Route("Delete/{id}")]
+        public async Task<ActionResult> Delete(String id)
         {
-            var movie = await DynamoDBContext.LoadAsync<Movie>(title);
+            var userName = userManager.GetUserId(HttpContext.User);
+            AppUser user = userManager.FindByIdAsync(userName).Result;
+            await DynamoDBContext.DeleteAsync<Movie>(id, user.Email);
 
-            ViewBag.Title = title;
-
-            return View();
-        }
-
-      
-
-
-        [HttpDelete]
-        public async Task<IActionResult> Delete(string title)
-        {
-            await DynamoDBContext.DeleteAsync<Movie>(title);
-            //return View("Index");
-            return RedirectToAction("Index");
+            return RedirectToAction(nameof(Index));
         }
     }
 }

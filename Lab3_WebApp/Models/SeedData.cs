@@ -23,21 +23,31 @@ namespace Lab3_WebApp.Models
             dynamoDB = app.ApplicationServices.GetRequiredService<IAmazonDynamoDB>();
             dynamoDBContext = app.ApplicationServices.GetRequiredService<IDynamoDBContext>();
 
-            List<AttributeDefinition> attributeDefinition_movie = new List<AttributeDefinition> 
+            List<AttributeDefinition> attributeDefinition_movie = new List<AttributeDefinition>
             {
-                new AttributeDefinition
-                {
-                    AttributeName = "Title",
+               new AttributeDefinition
+               {
+                    AttributeName = "Id",
                     AttributeType = "S"
-                }
+               },
+               new AttributeDefinition
+               {
+                    AttributeName = "Username",
+                    AttributeType = "S"
+               }
             };
 
             List<KeySchemaElement> keySchemaElements_movie = new List<KeySchemaElement>
             {
                 new KeySchemaElement
                 {
-                    AttributeName = "Title",
+                    AttributeName = "Id",
                     KeyType = "HASH"
+                },
+                new KeySchemaElement
+                {
+                    AttributeName = "Username",
+                    KeyType = "RANGE"
                 }
             };
 
@@ -49,23 +59,23 @@ namespace Lab3_WebApp.Models
 
             bool isActive = CreateTable_async(TABLE_NAME_MOVIE, attributeDefinition_movie, keySchemaElements_movie, provisionedThroughput).Result;
 
-            if(isActive)
+            if (isActive)
             {
                 if (CheckTableStatus(TABLE_NAME_MOVIE).Result)
                 {
                     List<Movie> movies = new List<Movie>
                     {
-                    new Movie("movie 1", "admin@mail.ca", "cast cast cast", "date1", 50),
-                    new Movie("movie 201", "ha@mail.ca", "cast cast cast", "date2", 60),
-                    new Movie("movie 202", "ha@mail.ca", "cast cast cast", "date2", 60),
-                    new Movie("movie 203", "ha@mail.ca", "cast cast cast", "date2", 60),
-                    new Movie("movie 204", "ha@mail.ca", "cast cast cast", "date2", 60),
-                    new Movie("movie 205", "ha@mail.ca", "cast cast cast", "date2", 60),
-                    new Movie("movie 3", "admin@mail.ca", "cast cast", "date3", 70),
-                    new Movie("movie 4", "admin@mail.ca", "cast cast", "date3", 70),
-                    new Movie("movie 5", "admin@mail.ca", "cast cast", "date3", 70),
-                    new Movie("movie 6", "admin@mail.ca", "cast cast", "date3", 70),
-                    new Movie("movie 7", "admin@mail.ca", "cast cast", "date3", 70)
+                    new Movie("100","movie 1", "admin@mail.ca", "cast cast cast", "date1", 50),
+                    new Movie("101","movie 201", "ha@mail.ca", "cast cast cast", "date2", 60),
+                    new Movie("102","movie 202", "ha@mail.ca", "cast cast cast", "date2", 60),
+                    new Movie("103","movie 203", "ha@mail.ca", "cast cast cast", "date2", 60),
+                    new Movie("104","movie 204", "ha@mail.ca", "cast cast cast", "date2", 60),
+                    new Movie("105","movie 205", "ha@mail.ca", "cast cast cast", "date2", 60),
+                    new Movie("106","movie 3", "admin@mail.ca", "cast cast", "date3", 70),
+                    new Movie("107","movie 4", "admin@mail.ca", "cast cast", "date3", 70),
+                    new Movie("108","movie 5", "admin@mail.ca", "cast cast", "date3", 70),
+                    new Movie("109","movie 6", "admin@mail.ca", "cast cast", "date3", 70),
+                    new Movie("110","movie 7", "admin@mail.ca", "cast cast", "date3", 70)
                     };
 
                     BatchWrite<Movie> movieBatch = dynamoDBContext.CreateBatchWrite<Movie>();
