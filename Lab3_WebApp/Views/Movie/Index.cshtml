@@ -51,7 +51,10 @@
                     @Html.DisplayFor(modelItem => item.Budget)
                 </td>
                 <td>
-                    <a class="btn btn-primary" asp-action="Download" asp-route-id="@item.Id">Download</a>
+                    <div>
+                        <a class="btn btn-primary" asp-action="Upload" asp-route-id="@item.Id" asp-controller="Movie">Upload</a>
+                        <a class="btn btn-primary" asp-action="Download" asp-route-id="@item.Id" asp-controller="Movie">Download</a>
+                    </div>
                 </td>
                 <td>
                     <a class="btn btn-info" asp-action="Details" asp-route-id="@item.Id">Details</a>

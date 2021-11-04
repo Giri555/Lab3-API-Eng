@@ -1,0 +1,11 @@
+﻿@model MyFile
+@{
+    ViewBag.Title = "Upload a file to S3 Bucket";
+}
+<h2>Upload a video to S3 Bucket</h2>
+
+<p>Use this area to browse video and upload to S3 bucket.</p>
+<form asp-action="Upload" enctype="multipart/form-data" >
+    <input type="file" name="videoUploaded" />
+    <input type="submit" />
+</form>

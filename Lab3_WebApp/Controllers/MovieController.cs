@@ -9,6 +9,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using Lab3_WebApp.Models;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
+using Amazon;
+using System.IO;
+using Amazon.S3.Transfer;
+using Microsoft.AspNetCore.Http;
+using Lab3_WebApp.Models.ViewModels;
+using System.Net.Http.Headers;
 
 namespace Lab3_WebApp.Controllers
 {
@@ -17,6 +24,8 @@ namespace Lab3_WebApp.Controllers
         IAmazonS3 S3Client { get; set; }
         IAmazonDynamoDB DynamoDBClient { get; set; }
         IDynamoDBContext DynamoDBContext { get; set; }
+        
+        private static readonly string bucketname = "lab03movies";
 
         private UserManager<AppUser> userManager;
        // private AppUser user;
@@ -36,8 +45,7 @@ namespace Lab3_WebApp.Controllers
 
             var scanConditions = new List<ScanCondition>() { new ScanCondition("Id", ScanOperator.IsNotNull), new ScanCondition("Username", ScanOperator.Equal, user.Email) };
             var searchResults = DynamoDBContext.ScanAsync<Movie>(scanConditions, null);
-            List<Movie> movies = await searchResults.GetNextSetAsync();
-           
+            List<Movie> movies = await searchResults.GetNextSetAsync();           
             return View(movies);
         }
 
@@ -107,6 +115,52 @@ namespace Lab3_WebApp.Controllers
             var userName = userManager.GetUserId(HttpContext.User);
             AppUser user = userManager.FindByIdAsync(userName).Result;
             await DynamoDBContext.DeleteAsync<Movie>(id, user.Email);
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        [HttpGet]
+        public ActionResult Upload()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Upload(IFormFile videoUploaded)
+        {
+            try
+            {
+                using (var newMemoryStream = new MemoryStream())
+                {
+                    videoUploaded.CopyTo(newMemoryStream);
+
+                    var uploadRequest = new TransferUtilityUploadRequest
+                    {
+                        InputStream = newMemoryStream,
+                        Key = videoUploaded.FileName,
+                        BucketName = bucketname,
+                        CannedACL = S3CannedACL.PublicRead
+                    };
+                    var fileTransferUtility = new TransferUtility(S3Client);
+                    await fileTransferUtility.UploadAsync(uploadRequest);
+                    ViewBag.Message = "Successfully upload!!!";
+                }
+            }
+
+            catch (AmazonS3Exception amazonS3Exception)
+            {
+                if (amazonS3Exception.ErrorCode != null &&
+                    (amazonS3Exception.ErrorCode.Equals("InvalidAccessKeyId")
+                    ||
+                    amazonS3Exception.ErrorCode.Equals("InvalidSecurity")))
+                {
+                    ViewBag.Message = "Check the provided AWS Credentials.";
+                }
+                else
+                {
+                    ViewBag.Message = "Error occurred: " + amazonS3Exception.Message;
+                }
+            }
 
             return RedirectToAction(nameof(Index));
         }
