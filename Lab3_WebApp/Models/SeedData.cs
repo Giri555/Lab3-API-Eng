@@ -47,7 +47,7 @@ namespace Lab3_WebApp.Models
 
                 Projection projection = new Projection() { ProjectionType = "INCLUDE" };
 
-                List<string> nonKeyAttributes = new List<string> { "Title", "Cast", "ReleaseDate", "Budget" };
+                List<string> nonKeyAttributes = new List<string> { "Title", "Cast", "ReleaseDate", "Budget", "Review" };
                 projection.NonKeyAttributes = nonKeyAttributes;
 
                 List<LocalSecondaryIndex> localSecondaryIndex = new List<LocalSecondaryIndex>
