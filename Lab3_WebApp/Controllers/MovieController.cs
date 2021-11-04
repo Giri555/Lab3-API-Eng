@@ -120,6 +120,15 @@ namespace Lab3_WebApp.Controllers
         }
 
         [HttpGet]
+        public async Task<IActionResult> Details(string id)
+        {
+            var userName = userManager.GetUserId(HttpContext.User);
+            AppUser user = userManager.FindByIdAsync(userName).Result;
+            var movie = await DynamoDBContext.LoadAsync<Movie>(id, user.Email);
+            return View(movie);
+        }
+
+        [HttpGet]
         [Route("Download/{id}")]
         public async Task<ActionResult> Download(string id)
         {

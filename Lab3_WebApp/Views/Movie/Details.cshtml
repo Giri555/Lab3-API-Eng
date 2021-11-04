@@ -1,0 +1,72 @@
+﻿@model Lab3_WebApp.Models.Movie
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h1>Movie Details</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Title)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Cast)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.ReleaseDate)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Budget)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Rating)
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+                @Model.Title
+            </td>
+            <td>
+                @Model.Cast
+            </td>
+            <td>
+                @Model.ReleaseDate
+            </td>
+            <td>
+                @Model.Budget
+            </td>
+            <td>
+                @Model.Rating
+            </td>
+        </tr>
+
+    </tbody>
+</table>
+
+
+<h4>Reviews</h4>
+<p>
+    <a class="btn btn-success" asp-action="CreateReview">Create Review</a>
+</p>
+@if (Model.Review != null)
+{
+    @foreach (KeyValuePair<string, Review> entry in Model.Review)
+    {
+        <hr />
+        <p>Author: @entry.Key</p>
+        <p>Rating: @entry.Value.Rating</p>
+        <p>Comment: @entry.Value.Comment</p>
+        @*<p>
+            <a class="btn btn-warning" asp-action="EditReview" asp-route-id="@Model.Id">Edit Review</a>
+        </p>*@
+        <hr />
+    }
+}
+else
+{
+    <p>No reviews on this movie yet.</p>
+}
