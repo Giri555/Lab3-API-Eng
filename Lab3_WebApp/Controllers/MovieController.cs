@@ -110,7 +110,7 @@ namespace Lab3_WebApp.Controllers
 
         [HttpGet]
         [Route("Delete/{id}")]
-        public async Task<ActionResult> Delete(String id)
+        public async Task<ActionResult> Delete(string id)
         {
             var userName = userManager.GetUserId(HttpContext.User);
             AppUser user = userManager.FindByIdAsync(userName).Result;
@@ -120,31 +120,39 @@ namespace Lab3_WebApp.Controllers
         }
 
         [HttpGet]
+        [Route("Download/{id}")]
+        public async Task<ActionResult> Download(string id)
+        {
+            var userName = userManager.GetUserId(HttpContext.User);
+            AppUser user = userManager.FindByIdAsync(userName).Result;
+            Movie movie = await DynamoDBContext.LoadAsync<Movie>(id, user.Email);
+            
+            await AWSHelper.DownloadFile(S3Client, bucketname, movie.Video);
+     
+            return RedirectToAction(nameof(Index));
+        }
+
+        [HttpGet]
+        [Route("Upload/{id}")]
         public ActionResult Upload()
         {
             return View();
         }
 
         [HttpPost]
-        public async Task<IActionResult> Upload(IFormFile videoUploaded)
+        [Route("Upload/{id}")]
+        public async Task<IActionResult> Upload(IFormFile videoUploaded, string id)
         {
+            string key = id +"_" + videoUploaded.FileName ;
             try
             {
-                using (var newMemoryStream = new MemoryStream())
-                {
-                    videoUploaded.CopyTo(newMemoryStream);
-
-                    var uploadRequest = new TransferUtilityUploadRequest
-                    {
-                        InputStream = newMemoryStream,
-                        Key = videoUploaded.FileName,
-                        BucketName = bucketname,
-                        CannedACL = S3CannedACL.PublicRead
-                    };
-                    var fileTransferUtility = new TransferUtility(S3Client);
-                    await fileTransferUtility.UploadAsync(uploadRequest);
-                    ViewBag.Message = "Successfully upload!!!";
-                }
+                AWSHelper.UploadFileAsync(videoUploaded, key, bucketname, S3Client);
+                
+                var userName = userManager.GetUserId(HttpContext.User);
+                AppUser user = userManager.FindByIdAsync(userName).Result;
+                var movie = await DynamoDBContext.LoadAsync<Movie>(id, user.Email);
+                movie.Video = key;
+                await DynamoDBContext.SaveAsync(movie);
             }
 
             catch (AmazonS3Exception amazonS3Exception)
