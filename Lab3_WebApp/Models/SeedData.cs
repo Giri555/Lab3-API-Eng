@@ -18,92 +18,99 @@ namespace Lab3_WebApp.Models
         static IAmazonDynamoDB dynamoDB;
         static IDynamoDBContext dynamoDBContext;
 
-        public static void EnsurePopulated(IApplicationBuilder app)
+        public static async void EnsurePopulated(IApplicationBuilder app)
         {
             dynamoDB = app.ApplicationServices.GetRequiredService<IAmazonDynamoDB>();
             dynamoDBContext = app.ApplicationServices.GetRequiredService<IDynamoDBContext>();
 
-            List<AttributeDefinition> attributeDefinition_movie = new List<AttributeDefinition>
+            // if the movie table does not exist, create it
+            if(!CheckTableExists(TABLE_NAME_MOVIE).Result)
             {
-               new AttributeDefinition
-               {
-                    AttributeName = "Id",
-                    AttributeType = "S"
-               },
-               new AttributeDefinition
-               {
-                    AttributeName = "Username",
-                    AttributeType = "S"
-               }
-            };
-
-            List<KeySchemaElement> keySchemaElements_movie = new List<KeySchemaElement>
-            {
-                new KeySchemaElement
+                List<AttributeDefinition> attributeDefinition_movie = new List<AttributeDefinition>
                 {
-                    AttributeName = "Id",
-                    KeyType = "HASH"
-                },
-                new KeySchemaElement
+                   new AttributeDefinition { AttributeName = "Id", AttributeType = "S" },
+                   new AttributeDefinition { AttributeName = "Username", AttributeType = "S" },
+                   new AttributeDefinition { AttributeName = "Rating", AttributeType = "N" }
+                };
+
+                List<KeySchemaElement> keySchemaElements_movie = new List<KeySchemaElement>
                 {
-                    AttributeName = "Username",
-                    KeyType = "RANGE"
-                }
-            };
+                    new KeySchemaElement { AttributeName = "Id", KeyType = "HASH" },
+                    new KeySchemaElement { AttributeName = "Username", KeyType = "RANGE" }
+                };
 
-            ProvisionedThroughput provisionedThroughput = new ProvisionedThroughput
-            {
-                ReadCapacityUnits = 2,
-                WriteCapacityUnits = 1
-            };
+                List<KeySchemaElement> indexKeySchema_movie = new List<KeySchemaElement>
+                {
+                    new KeySchemaElement { AttributeName = "Id", KeyType = "HASH" },
+                    new KeySchemaElement { AttributeName = "Rating", KeyType = "RANGE" }
+                };
 
-            bool isActive = CreateTable_async(TABLE_NAME_MOVIE, attributeDefinition_movie, keySchemaElements_movie, provisionedThroughput).Result;
+                Projection projection = new Projection() { ProjectionType = "INCLUDE" };
 
-            if (isActive)
-            {
-                if (CheckTableStatus(TABLE_NAME_MOVIE).Result)
+                List<string> nonKeyAttributes = new List<string> { "Title", "Cast", "ReleaseDate", "Budget", "Review" };
+                projection.NonKeyAttributes = nonKeyAttributes;
+
+                List<LocalSecondaryIndex> localSecondaryIndex = new List<LocalSecondaryIndex>
+                {
+                    new LocalSecondaryIndex { IndexName = "Rating", KeySchema = indexKeySchema_movie, Projection = projection}
+                };
+
+                ProvisionedThroughput provisionedThroughput = new ProvisionedThroughput
+                {
+                    ReadCapacityUnits = 2,
+                    WriteCapacityUnits = 1
+                };
+
+                CreateTable_async(TABLE_NAME_MOVIE, attributeDefinition_movie, keySchemaElements_movie, localSecondaryIndex, provisionedThroughput);
+
+                if (CheckTableStatus(TABLE_NAME_MOVIE).Result) // if table status is active, populate it
                 {
                     List<Movie> movies = new List<Movie>
                     {
-                    new Movie("100","movie 1", "admin@mail.ca", "cast cast cast", "date1", 50),
-                    new Movie("101","movie 201", "ha@mail.ca", "cast cast cast", "date2", 60),
-                    new Movie("102","movie 202", "ha@mail.ca", "cast cast cast", "date2", 60),
-                    new Movie("103","movie 203", "ha@mail.ca", "cast cast cast", "date2", 60),
-                    new Movie("104","movie 204", "ha@mail.ca", "cast cast cast", "date2", 60),
-                    new Movie("105","movie 205", "ha@mail.ca", "cast cast cast", "date2", 60),
-                    new Movie("106","movie 3", "admin@mail.ca", "cast cast", "date3", 70),
-                    new Movie("107","movie 4", "admin@mail.ca", "cast cast", "date3", 70),
-                    new Movie("108","movie 5", "admin@mail.ca", "cast cast", "date3", 70),
-                    new Movie("109","movie 6", "admin@mail.ca", "cast cast", "date3", 70),
-                    new Movie("110","movie 7", "admin@mail.ca", "cast cast", "date3", 70)
+                        new Movie("100","movie 1", "admin@mail.ca", "cast cast cast", "2021-10-09", 50, 5),
+                        new Movie("101","movie 2", "admin@mail.ca", "cast cast cast", "2021-10-09", 60, 9),
+                        new Movie("102","movie 3", "admin@mail.ca", "cast cast cast", "2021-10-09", 60, 9),
+                        new Movie("103","movie 4", "admin@mail.ca", "cast cast cast", "2021-10-10", 60, 9),
+                        new Movie("104","movie 5", "admin@mail.ca", "cast cast cast", "2021-10-10", 60, 9),
+                        new Movie("105","movie 6", "ha@mail.ca", "cast cast cast", "2021-10-10", 60, 3),
+                        new Movie("106","movie 7", "ha@mail.ca", "cast cast", "2021-10-09", 70, 7),
+                        new Movie("107","movie 8", "ha@mail.ca", "cast cast", "2021-10-09", 70, 7),
+                        new Movie("108","movie 9", "ha@mail.ca", "cast cast", "2021-10-09", 70, 7),
+                        new Movie("109","movie 109", "admin@mail.ca", "cast cast", "2021-10-09", 70, 7, new Dictionary<string, Review>() // one movie, with 2 reviews
+                        {
+                            { "admin@mail.ca", new Review { Rating=9, Comment="This is a nice movie", DateTime="2021-10-09T23:43:21.556Z" } },
+                            { "ha@mail.ca", new Review { Rating=7, Comment="This movie was boring", DateTime="2021-10-10T13:15:39.206Z" } }
+                        })
                     };
 
                     BatchWrite<Movie> movieBatch = dynamoDBContext.CreateBatchWrite<Movie>();
                     movieBatch.AddPutItems(movies);
-                    movieBatch.ExecuteAsync();
+                    await movieBatch.ExecuteAsync();
                 }
             }
         }
 
-        public static async Task<bool> CreateTable_async(string tableName, List<AttributeDefinition> tableAttributes, List<KeySchemaElement> tableKeySchema, ProvisionedThroughput provisionedThroughput)
+        public static async void CreateTable_async(string tableName, List<AttributeDefinition> tableAttributes, List<KeySchemaElement> tableKeySchema, List<LocalSecondaryIndex> localSecondaryIndexes, ProvisionedThroughput provisionedThroughput)
+        {
+            CreateTableRequest request = new CreateTableRequest
+            {
+                TableName = tableName,
+                AttributeDefinitions = tableAttributes,
+                KeySchema = tableKeySchema,
+                LocalSecondaryIndexes = localSecondaryIndexes,
+                BillingMode = BillingMode.PROVISIONED,
+                ProvisionedThroughput = provisionedThroughput
+            };
+            await dynamoDB.CreateTableAsync(request);
+        }
+
+        public static async Task<bool> CheckTableExists(string tableName)
         {
             ListTablesResponse response = await dynamoDB.ListTablesAsync();
-
-            if (!response.TableNames.Contains(tableName))
-            {
-                CreateTableRequest request = new CreateTableRequest
-                {
-                    TableName = tableName,
-                    AttributeDefinitions = tableAttributes,
-                    KeySchema = tableKeySchema,
-                    BillingMode = BillingMode.PROVISIONED,
-                    ProvisionedThroughput = provisionedThroughput
-                };
-
-                await dynamoDB.CreateTableAsync(request);
+            if (response.TableNames.Contains(tableName))
                 return true;
-            }
-            return false;
+            else
+                return false;
         }
 
         public static async Task<bool> CheckTableStatus(string tableName)
@@ -126,5 +133,6 @@ namespace Lab3_WebApp.Models
             } while (status != TableStatus.ACTIVE);
             return true;
         }
+
     }
 }
