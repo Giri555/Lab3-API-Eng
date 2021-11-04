@@ -110,6 +110,15 @@ namespace Lab3_WebApp.Controllers
 
             return RedirectToAction(nameof(Index));
         }
+
+        [HttpGet]
+        public async Task<IActionResult> Details(string id)
+        {
+            var userName = userManager.GetUserId(HttpContext.User);
+            AppUser user = userManager.FindByIdAsync(userName).Result;
+            var movie = await DynamoDBContext.LoadAsync<Movie>(id, user.Email);
+            return View(movie);
+        }
     }
 }
 
