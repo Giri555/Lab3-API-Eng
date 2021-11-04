@@ -25,30 +25,31 @@ namespace Lab3_WebApp.Models
 
             List<AttributeDefinition> attributeDefinition_movie = new List<AttributeDefinition>
             {
-               new AttributeDefinition
-               {
-                    AttributeName = "Id",
-                    AttributeType = "S"
-               },
-               new AttributeDefinition
-               {
-                    AttributeName = "Username",
-                    AttributeType = "S"
-               }
+               new AttributeDefinition { AttributeName = "Id", AttributeType = "S" },
+               new AttributeDefinition { AttributeName = "Username", AttributeType = "S" },
+               new AttributeDefinition { AttributeName = "Rating", AttributeType = "N" }
             };
 
             List<KeySchemaElement> keySchemaElements_movie = new List<KeySchemaElement>
             {
-                new KeySchemaElement
-                {
-                    AttributeName = "Id",
-                    KeyType = "HASH"
-                },
-                new KeySchemaElement
-                {
-                    AttributeName = "Username",
-                    KeyType = "RANGE"
-                }
+                new KeySchemaElement { AttributeName = "Id", KeyType = "HASH" },
+                new KeySchemaElement { AttributeName = "Username", KeyType = "RANGE" }
+            };
+
+            List<KeySchemaElement> indexKeySchema_movie = new List<KeySchemaElement>
+            {
+                new KeySchemaElement { AttributeName = "Id", KeyType = "HASH" },
+                new KeySchemaElement { AttributeName = "Rating", KeyType = "RANGE" }
+            };
+                        
+            Projection projection = new Projection() { ProjectionType = "INCLUDE" };
+
+            List<string> nonKeyAttributes = new List<string> { "Title", "Cast", "ReleaseDate", "Budget" };
+            projection.NonKeyAttributes = nonKeyAttributes;
+
+            List<LocalSecondaryIndex> localSecondaryIndex = new List<LocalSecondaryIndex>
+            {
+                new LocalSecondaryIndex { IndexName = "Rating", KeySchema = indexKeySchema_movie, Projection = projection}
             };
 
             ProvisionedThroughput provisionedThroughput = new ProvisionedThroughput
@@ -57,25 +58,23 @@ namespace Lab3_WebApp.Models
                 WriteCapacityUnits = 1
             };
 
-            bool isActive = CreateTable_async(TABLE_NAME_MOVIE, attributeDefinition_movie, keySchemaElements_movie, provisionedThroughput).Result;
+            bool isCreated = CreateTable_async(TABLE_NAME_MOVIE, attributeDefinition_movie, keySchemaElements_movie, localSecondaryIndex, provisionedThroughput).Result;
 
-            if (isActive)
+            if (isCreated)
             {
-                if (CheckTableStatus(TABLE_NAME_MOVIE).Result)
+                if (CheckTableStatus(TABLE_NAME_MOVIE).Result) // is Active
                 {
                     List<Movie> movies = new List<Movie>
                     {
-                    new Movie("100","movie 1", "admin@mail.ca", "cast cast cast", "date1", 50),
-                    new Movie("101","movie 201", "ha@mail.ca", "cast cast cast", "date2", 60),
-                    new Movie("102","movie 202", "ha@mail.ca", "cast cast cast", "date2", 60),
-                    new Movie("103","movie 203", "ha@mail.ca", "cast cast cast", "date2", 60),
-                    new Movie("104","movie 204", "ha@mail.ca", "cast cast cast", "date2", 60),
-                    new Movie("105","movie 205", "ha@mail.ca", "cast cast cast", "date2", 60),
-                    new Movie("106","movie 3", "admin@mail.ca", "cast cast", "date3", 70),
-                    new Movie("107","movie 4", "admin@mail.ca", "cast cast", "date3", 70),
-                    new Movie("108","movie 5", "admin@mail.ca", "cast cast", "date3", 70),
-                    new Movie("109","movie 6", "admin@mail.ca", "cast cast", "date3", 70),
-                    new Movie("110","movie 7", "admin@mail.ca", "cast cast", "date3", 70)
+                        new Movie("100","movie 1", "admin@mail.ca", "cast cast cast", "2021-10-09T23:43:21.556Z", 50, 5),
+                        new Movie("101","movie 2", "admin@mail.ca", "cast cast cast", "2021-10-09T19:48:17.008Z", 60, 9),
+                        new Movie("102","movie 3", "admin@mail.ca", "cast cast cast", "2021-10-09T19:56:48.367Z", 60, 9),
+                        new Movie("103","movie 4", "admin@mail.ca", "cast cast cast", "2021-10-10T13:15:39.206Z", 60, 9),
+                        new Movie("104","movie 5", "admin@mail.ca", "cast cast cast", "2021-10-10T13:36:02.454Z", 60, 9),
+                        new Movie("105","movie 6", "ha@mail.ca", "cast cast cast", "2021-10-10T13:36:10.758Z", 60, 3),
+                        new Movie("106","movie 7", "ha@mail.ca", "cast cast", "2021-10-09T19:50:32.767Z", 70, 7),
+                        new Movie("107","movie 8", "ha@mail.ca", "cast cast", "2021-10-09T23:55:29.823Z", 70, 7),
+                        new Movie("108","movie 9", "ha@mail.ca", "cast cast", "2021-10-09T19:51:26.326Z", 70, 7)
                     };
 
                     BatchWrite<Movie> movieBatch = dynamoDBContext.CreateBatchWrite<Movie>();
@@ -85,7 +84,7 @@ namespace Lab3_WebApp.Models
             }
         }
 
-        public static async Task<bool> CreateTable_async(string tableName, List<AttributeDefinition> tableAttributes, List<KeySchemaElement> tableKeySchema, ProvisionedThroughput provisionedThroughput)
+        public static async Task<bool> CreateTable_async(string tableName, List<AttributeDefinition> tableAttributes, List<KeySchemaElement> tableKeySchema, List<LocalSecondaryIndex> localSecondaryIndexes, ProvisionedThroughput provisionedThroughput)
         {
             ListTablesResponse response = await dynamoDB.ListTablesAsync();
 
@@ -96,6 +95,7 @@ namespace Lab3_WebApp.Models
                     TableName = tableName,
                     AttributeDefinitions = tableAttributes,
                     KeySchema = tableKeySchema,
+                    LocalSecondaryIndexes = localSecondaryIndexes,
                     BillingMode = BillingMode.PROVISIONED,
                     ProvisionedThroughput = provisionedThroughput
                 };
