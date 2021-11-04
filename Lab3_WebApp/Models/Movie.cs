@@ -13,10 +13,13 @@ namespace Lab3_WebApp.Models
         public string Id { get; set; }
 
         [DynamoDBRangeKey]
-        public string Username { get; set; }
+        public string Username { get; set; } // owner
 
         [DynamoDBProperty]
-        public int Rating { get; set; }
+        public int Rating { get; set; } // average rating
+
+        [DynamoDBProperty]
+        public Dictionary<string, Review> Review { get; set; } // key = username(author of review), value = Review(rating, comment, datetime)
 
         [DynamoDBProperty]
         public string Title { get; set; }
@@ -26,9 +29,6 @@ namespace Lab3_WebApp.Models
 
         [DynamoDBProperty]
         public string ReleaseDate { get; set; }
-
-        //[DynamoDBProperty]
-        //public Dictionary<string, string> Comments { get; set; }
 
         [DynamoDBProperty]
         public int Budget { get; set; }
@@ -44,6 +44,18 @@ namespace Lab3_WebApp.Models
             ReleaseDate = releaseDate;
             Budget = budget;
             Rating = rating;
+        }
+
+        public Movie(string id, string title, string username, string cast, string releaseDate, int budget, int rating, Dictionary<string, Review> review) // movie + review
+        {
+            Id = id;
+            Title = title;
+            Username = username;
+            Cast = cast;
+            ReleaseDate = releaseDate;
+            Budget = budget;
+            Rating = rating;
+            Review = review;
         }
     }
 }

@@ -75,7 +75,12 @@ namespace Lab3_WebApp.Models
                         new Movie("105","movie 6", "ha@mail.ca", "cast cast cast", "2021-10-10", 60, 3),
                         new Movie("106","movie 7", "ha@mail.ca", "cast cast", "2021-10-09", 70, 7),
                         new Movie("107","movie 8", "ha@mail.ca", "cast cast", "2021-10-09", 70, 7),
-                        new Movie("108","movie 9", "ha@mail.ca", "cast cast", "2021-10-09", 70, 7)
+                        new Movie("108","movie 9", "ha@mail.ca", "cast cast", "2021-10-09", 70, 7),
+                        new Movie("109","movie 109", "admin@mail.ca", "cast cast", "2021-10-09", 70, 7, new Dictionary<string, Review>() // one movie, with 2 reviews
+                        {
+                            { "admin@mail.ca", new Review { Rating=9, Comment="This is a nice movie", DateTime="2021-10-09T23:43:21.556Z" } },
+                            { "ha@mail.ca", new Review { Rating=7, Comment="This movie was boring", DateTime="2021-10-10T13:15:39.206Z" } }
+                        })
                     };
 
                     BatchWrite<Movie> movieBatch = dynamoDBContext.CreateBatchWrite<Movie>();
