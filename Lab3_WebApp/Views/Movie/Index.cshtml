@@ -30,7 +30,7 @@
                 Download
             </th>
             <th>
-                View Details
+                Details
             </th>
             <th>
                 Action
@@ -57,10 +57,16 @@
                 @Html.DisplayFor(modelItem => item.Rating)
             </td>
             <td>
-                <a class="btn btn-primary" asp-action="Download" asp-route-id="@item.Id">Download</a>
+                <div>
+                    <a class="btn btn-primary" asp-action="Upload" asp-route-id="@item.Id" asp-controller="Movie">Upload</a>
+                    @if (item.Video != null)
+                    {
+                       <a class="btn btn-primary" asp-action="Download" asp-route-id="@item.Id" asp-route-username="@item.Username">Download</a>
+                    }
+                </div>
             </td>
             <td>
-                <a class="btn btn-info" asp-action="Details" asp-route-id="@item.Id">Details</a>
+                @Html.ActionLink("Details", "Details", new { username = item.Username, id = item.Id })
             </td>
             <td>
                 <div>

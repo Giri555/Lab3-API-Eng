@@ -33,6 +33,9 @@ namespace Lab3_WebApp.Models
         [DynamoDBProperty]
         public int Budget { get; set; }
 
+        [DynamoDBProperty]
+        public string Video { get; set; }
+
         public Movie() { }
 
         public Movie(string id, string title, string username, string cast, string releaseDate, int budget, int rating)
@@ -44,6 +47,7 @@ namespace Lab3_WebApp.Models
             ReleaseDate = releaseDate;
             Budget = budget;
             Rating = rating;
+            Review = new Dictionary<string, Review>() { };
         }
 
         public Movie(string id, string title, string username, string cast, string releaseDate, int budget, int rating, Dictionary<string, Review> review) // movie + review

@@ -1,6 +1,7 @@
 ﻿@model Lab3_WebApp.Models.Movie
 @{
     ViewData["Title"] = "Details";
+    string currentUser = ViewBag.CurrentUser; 
 }
 
 <h1>Movie Details</h1>
@@ -47,11 +48,7 @@
     </tbody>
 </table>
 
-
 <h4>Reviews</h4>
-<p>
-    <a class="btn btn-success" asp-action="CreateReview">Create Review</a>
-</p>
 @if (Model.Review != null)
 {
     @foreach (KeyValuePair<string, Review> entry in Model.Review)
@@ -60,9 +57,13 @@
         <p>Author: @entry.Key</p>
         <p>Rating: @entry.Value.Rating</p>
         <p>Comment: @entry.Value.Comment</p>
-        @*<p>
-            <a class="btn btn-warning" asp-action="EditReview" asp-route-id="@Model.Id">Edit Review</a>
-        </p>*@
+        @if (entry.Key.Equals(currentUser) || (Convert.ToDateTime(entry.Value.DateTime) - DateTime.Now).TotalHours < 24 )
+        {
+            @: <p>
+                <a class="btn btn-warning" asp-action="EditReview" asp-route-id="@Model.Id">Edit Review</a>
+            @:</p>
+        }
+
         <hr />
     }
 }
