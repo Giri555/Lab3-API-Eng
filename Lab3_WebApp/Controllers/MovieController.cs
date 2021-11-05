@@ -120,11 +120,9 @@ namespace Lab3_WebApp.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Details(string id)
+        public async Task<IActionResult> Details(string id, string username)
         {
-            var userName = userManager.GetUserId(HttpContext.User);
-            AppUser user = userManager.FindByIdAsync(userName).Result;
-            var movie = await DynamoDBContext.LoadAsync<Movie>(id, user.Email);
+            var movie = await DynamoDBContext.LoadAsync<Movie>(id, username);
             return View(movie);
         }
 
@@ -136,9 +134,21 @@ namespace Lab3_WebApp.Controllers
             AppUser user = userManager.FindByIdAsync(userName).Result;
             Movie movie = await DynamoDBContext.LoadAsync<Movie>(id, user.Email);
             
-            await AWSHelper.DownloadFile(S3Client, bucketname, movie.Video);
+            AWSHelper.DownloadFile(S3Client, bucketname, movie.Video);
      
             return RedirectToAction(nameof(Index));
+        }
+
+        [HttpGet]
+        public async Task<ActionResult> CreateReview()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> CreateReview(string id)
+        {
+            return View();
         }
 
         [HttpGet]
@@ -155,7 +165,7 @@ namespace Lab3_WebApp.Controllers
             string key = id +"_" + videoUploaded.FileName ;
             try
             {
-                AWSHelper.UploadFileAsync(videoUploaded, key, bucketname, S3Client);
+                await AWSHelper.UploadFileAsync(videoUploaded, key, bucketname, S3Client);
                 
                 var userName = userManager.GetUserId(HttpContext.User);
                 AppUser user = userManager.FindByIdAsync(userName).Result;

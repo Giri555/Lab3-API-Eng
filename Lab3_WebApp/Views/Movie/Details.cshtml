@@ -47,10 +47,9 @@
     </tbody>
 </table>
 
-
 <h4>Reviews</h4>
 <p>
-    <a class="btn btn-success" asp-action="CreateReview">Create Review</a>
+    <a class="btn btn-success" asp-route-id="@Model.Id" asp-action="CreateReview">Create Review</a>
 </p>
 @if (Model.Review != null)
 {
@@ -61,8 +60,8 @@
         <p>Rating: @entry.Value.Rating</p>
         <p>Comment: @entry.Value.Comment</p>
         @*<p>
-            <a class="btn btn-warning" asp-action="EditReview" asp-route-id="@Model.Id">Edit Review</a>
-        </p>*@
+                <a class="btn btn-warning" asp-action="EditReview" asp-route-id="@Model.Id">Edit Review</a>
+            </p>*@
         <hr />
     }
 }

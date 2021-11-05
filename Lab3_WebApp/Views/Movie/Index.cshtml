@@ -57,7 +57,7 @@
                     </div>
                 </td>
                 <td>
-                    <a class="btn btn-info" asp-action="Details" asp-route-id="@item.Id">Details</a>
+                    @Html.ActionLink("Details", "Details", new { username = item.Username, id = item.Id })
                 </td>
                 <td>
                     <div>

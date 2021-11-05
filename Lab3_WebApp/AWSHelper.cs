@@ -46,7 +46,7 @@ namespace Lab3_WebApp
             }
         }
 
-        public static async Task DownloadFile(IAmazonS3 S3Client, string bucketname, string videoKey)
+        public static void DownloadFile(IAmazonS3 S3Client, string bucketname, string videoKey)
         {
             try
             {
