@@ -230,8 +230,8 @@ namespace Lab3_WebApp.Controllers
         {
             var userName = userManager.GetUserId(HttpContext.User);
             AppUser user = userManager.FindByIdAsync(userName).Result;
-            Movie editingMovie = DynamoDBContext.LoadAsync<Movie>(id, user.Email).Result;
-            Task.Delay(1000);
+            Movie editingMovie = await DynamoDBContext.LoadAsync<Movie>(id, user.Email);
+            // Task.Delay(1000);
             Review review = editingMovie.Review[user.Email];
             return View("EditReview", review);
         }
@@ -242,7 +242,7 @@ namespace Lab3_WebApp.Controllers
         {
             var userName = userManager.GetUserId(HttpContext.User);
             AppUser user = userManager.FindByIdAsync(userName).Result;
-            Movie editingMovie = await DynamoDBContext.LoadAsync<Movie>(id, username);
+            Movie editingMovie = await DynamoDBContext.LoadAsync<Movie>(id, user.Email);
 
             review.DateTime = DateTime.Now.ToString();
             if (editingMovie.Review == null)
