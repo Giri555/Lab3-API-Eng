@@ -46,7 +46,7 @@ namespace Lab3_WebApp.Controllers
 
             var scanConditions = new List<ScanCondition>() { new ScanCondition("Id", ScanOperator.IsNotNull), new ScanCondition("Username", ScanOperator.Equal, user.Email) };
             var searchResults = DynamoDBContext.ScanAsync<Movie>(scanConditions, null);
-            List<Movie> movies = await searchResults.GetNextSetAsync();           
+            List<Movie> movies = await searchResults.GetNextSetAsync();
             return View(movies);
         }
 
@@ -130,6 +130,20 @@ namespace Lab3_WebApp.Controllers
             var movie = await DynamoDBContext.LoadAsync<Movie>(id, username);
             return View(movie);
         }
+
+        [HttpPost]
+        public async Task<ActionResult> FilterByRating(int rating)
+        {
+            var userName = userManager.GetUserId(HttpContext.User);
+            AppUser user = userManager.FindByIdAsync(userName).Result;
+
+            var scanConditions = new List<ScanCondition>() { new ScanCondition("Id", ScanOperator.IsNotNull), new ScanCondition("Username", ScanOperator.NotEqual, user.Email), new ScanCondition("Rating", ScanOperator.GreaterThan, rating) };
+            var searchResults = DynamoDBContext.ScanAsync<Movie>(scanConditions, null);
+            List<Movie> movies = await searchResults.GetNextSetAsync();
+
+            return View("Other", movies);
+        }
+
 
         [HttpGet]
         [Route("Download/{id}")]
@@ -241,5 +255,6 @@ namespace Lab3_WebApp.Controllers
         }
     }
 }
+
 
 
