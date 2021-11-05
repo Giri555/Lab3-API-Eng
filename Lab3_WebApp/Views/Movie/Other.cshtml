@@ -61,7 +61,8 @@
             </td>
             <td>
                 <div>
-                    <a class="btn btn-warning" asp-action="Comment" asp-route-id="@item.Id">Comment</a>
+                   
+                    <a class="btn btn-warning" href='@Url.Action("CreateReview", "Movie", new { id = item.Id, username= item.Username })'>Comment</a>
                 </div>
             </td>
         </tr>

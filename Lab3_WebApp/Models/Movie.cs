@@ -47,6 +47,7 @@ namespace Lab3_WebApp.Models
             ReleaseDate = releaseDate;
             Budget = budget;
             Rating = rating;
+            Review = new Dictionary<string, Review>() { };
         }
 
         public Movie(string id, string title, string username, string cast, string releaseDate, int budget, int rating, Dictionary<string, Review> review) // movie + review

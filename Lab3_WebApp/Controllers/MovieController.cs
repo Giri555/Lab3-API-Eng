@@ -16,6 +16,7 @@ using Amazon.S3.Transfer;
 using Microsoft.AspNetCore.Http;
 using Lab3_WebApp.Models.ViewModels;
 using System.Net.Http.Headers;
+using System.Diagnostics;
 
 namespace Lab3_WebApp.Controllers
 {
@@ -28,7 +29,7 @@ namespace Lab3_WebApp.Controllers
         private static readonly string bucketname = "lab03movies";
 
         private UserManager<AppUser> userManager;
-       // private AppUser user;
+
         public MovieController(IAmazonS3 s3Client, IAmazonDynamoDB dynamoDB, IDynamoDBContext dynamoDBContext, UserManager<AppUser> userManager)
         {
             S3Client = s3Client;
@@ -122,6 +123,10 @@ namespace Lab3_WebApp.Controllers
         [HttpGet]
         public async Task<IActionResult> Details(string id, string username)
         {
+            var userName = userManager.GetUserId(HttpContext.User);
+            AppUser user = userManager.FindByIdAsync(userName).Result;
+            ViewBag.CurrentUser = user.Email;
+            
             var movie = await DynamoDBContext.LoadAsync<Movie>(id, username);
             return View(movie);
         }
@@ -137,18 +142,6 @@ namespace Lab3_WebApp.Controllers
             AWSHelper.DownloadFile(S3Client, bucketname, movie.Video);
      
             return RedirectToAction(nameof(Index));
-        }
-
-        [HttpGet]
-        public async Task<ActionResult> CreateReview()
-        {
-            return View();
-        }
-
-        [HttpPost]
-        public async Task<ActionResult> CreateReview(string id)
-        {
-            return View();
         }
 
         [HttpGet]
@@ -190,6 +183,61 @@ namespace Lab3_WebApp.Controllers
             }
 
             return RedirectToAction(nameof(Index));
+        }
+
+        [HttpGet]
+        [Route("CreateReview/{id}/{username}")]
+        public async Task<IActionResult> CreateReview()
+        {
+           return View("Comment");
+        }
+
+        [HttpPost]
+        [Route("CreateReview/{id}/{username}")]
+        public async Task<IActionResult> CreateReview(Review review, string id, string username)
+        { 
+            Movie editingMovie = await DynamoDBContext.LoadAsync<Movie>(id, username);
+            var userName = userManager.GetUserId(HttpContext.User);
+            AppUser user = userManager.FindByIdAsync(userName).Result;
+            
+            review.DateTime = DateTime.Now.ToString();
+            if(editingMovie.Review == null)
+            {
+                editingMovie.Review = new Dictionary<string, Review> { };
+            }
+            editingMovie.Review.Add(user.Email, review);
+            await DynamoDBContext.SaveAsync(editingMovie);
+            return RedirectToAction("Index");
+        }
+
+        [HttpGet]
+        [Route("EditReview/{id}")]
+        public async Task<IActionResult> EditReview(string id)
+        {
+            var userName = userManager.GetUserId(HttpContext.User);
+            AppUser user = userManager.FindByIdAsync(userName).Result;
+            Movie editingMovie = DynamoDBContext.LoadAsync<Movie>(id, user.Email).Result;
+            Task.Delay(1000);
+            Review review = editingMovie.Review[user.Email];
+            return View("EditReview", review);
+        }
+
+        [HttpPost]
+        [Route("EditReview/{id}")]
+        public async Task<IActionResult> EditReview(Review review, string id)
+        {
+            var userName = userManager.GetUserId(HttpContext.User);
+            AppUser user = userManager.FindByIdAsync(userName).Result;
+            Movie editingMovie = await DynamoDBContext.LoadAsync<Movie>(id, username);
+
+            review.DateTime = DateTime.Now.ToString();
+            if (editingMovie.Review == null)
+            {
+                editingMovie.Review = new Dictionary<string, Review> { };
+            }
+            editingMovie.Review.Add(user.Email, review);
+            await DynamoDBContext.SaveAsync(editingMovie);
+            return RedirectToAction("Index");
         }
     }
 }
