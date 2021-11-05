@@ -86,7 +86,7 @@
             </td>
             <td>
                 <div>
-                    @if (item.Review.ContainsKey(currentUser))
+                    @if (item.Review != null && item.Review.ContainsKey(currentUser))
                 {
                     <a class="btn btn-warning" href='@Url.Action("EditReview", "Movie", new { id = item.Id, username= item.Username })'>Edit Review</a>
                 }
