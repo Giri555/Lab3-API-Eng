@@ -1,6 +1,7 @@
 ﻿@model IEnumerable<Lab3_WebApp.Models.Movie>
 @{
     ViewData["Title"] = "Movies";
+    string currentUser = ViewBag.CurrentUser;
 }
 
 <h1>Other's Movies</h1>
@@ -71,15 +72,28 @@
                 @Html.DisplayFor(modelItem => item.Rating)
             </td>
             <td>
-                <a class="btn btn-primary" asp-action="Download" asp-route-id="@item.Id">Download</a>
+                @if(item.Video != null)
+                {
+                   <a class="btn btn-primary" asp-action="Download" asp-route-id="@item.Id" asp-route-username="@item.Username">Download</a>
+                }
+                else
+                {
+                    <p>no video</p>
+                }               
             </td>
             <td>
                 @Html.ActionLink("Details", "Details", new { username = item.Username, id = item.Id })
             </td>
             <td>
                 <div>
-                   
-                    <a class="btn btn-warning" href='@Url.Action("CreateReview", "Movie", new { id = item.Id, username= item.Username })'>Comment</a>
+                    @if (item.Review.ContainsKey(currentUser))
+                {
+                    <a class="btn btn-warning" href='@Url.Action("EditReview", "Movie", new { id = item.Id, username= item.Username })'>Edit Review</a>
+                }
+                else
+                {
+                    <a class="btn btn-warning" href='@Url.Action("CreateReview", "Movie", new { id = item.Id, username= item.Username })'>Create Review</a>
+                }
                 </div>
             </td>
         </tr>

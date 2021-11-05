@@ -30,7 +30,7 @@
                 Download
             </th>
             <th>
-                View Details
+                Details
             </th>
             <th>
                 Action
@@ -40,35 +40,41 @@
     <tbody>
         @foreach (var item in Model)
         {
-            <tr>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Title)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Cast)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.ReleaseDate)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Budget)
-                </td>
-                <td>
-                    <div>
-                        <a class="btn btn-primary" asp-action="Upload" asp-route-id="@item.Id" asp-controller="Movie">Upload</a>
-                        <a class="btn btn-primary" asp-action="Download" asp-route-id="@item.Id" asp-controller="Movie">Download</a>
-                    </div>
-                </td>
-                <td>
-                    @Html.ActionLink("Details", "Details", new { username = item.Username, id = item.Id })
-                </td>
-                <td>
-                    <div>
-                        <a class="btn btn-warning" asp-action="Edit" asp-controller="Movie" asp-route-id="@item.Id">Edit</a>
-                        <a class="btn btn-danger" asp-action="Delete" asp-controller="Movie" asp-route-id="@item.Id">Delete</a>
-                    </div>
-                </td>
-            </tr>
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Title)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Cast)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ReleaseDate)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Budget)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Rating)
+            </td>
+            <td>
+                <div>
+                    <a class="btn btn-primary" asp-action="Upload" asp-route-id="@item.Id" asp-controller="Movie">Upload</a>
+                    @if (item.Video != null)
+                    {
+                       <a class="btn btn-primary" asp-action="Download" asp-route-id="@item.Id" asp-route-username="@item.Username">Download</a>
+                    }
+                </div>
+            </td>
+            <td>
+                @Html.ActionLink("Details", "Details", new { username = item.Username, id = item.Id })
+            </td>
+            <td>
+                <div>
+                    <a class="btn btn-warning" asp-action="Edit" asp-controller="Movie" asp-route-id="@item.Id">Edit</a>
+                    <a class="btn btn-danger" asp-action="Delete" asp-controller="Movie" asp-route-id="@item.Id">Delete</a>
+                </div>
+            </td>
+        </tr>
         }
     </tbody>
 </table>
