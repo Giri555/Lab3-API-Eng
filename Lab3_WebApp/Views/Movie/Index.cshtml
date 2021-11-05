@@ -24,6 +24,9 @@
                 @Html.DisplayNameFor(model => model.Budget)
             </th>
             <th>
+                @Html.DisplayNameFor(model => model.Rating)
+            </th>
+            <th>
                 Download
             </th>
             <th>
@@ -37,32 +40,35 @@
     <tbody>
         @foreach (var item in Model)
         {
-            <tr>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Title)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Cast)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.ReleaseDate)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Budget)
-                </td>
-                <td>
-                    <a class="btn btn-primary" asp-action="Download" asp-route-id="@item.Id">Download</a>
-                </td>
-                <td>
-                    <a class="btn btn-info" asp-action="Details" asp-route-id="@item.Id">Details</a>
-                </td>
-                <td>
-                    <div>
-                        <a class="btn btn-warning" asp-action="Edit" asp-controller="Movie" asp-route-id="@item.Id">Edit</a>
-                        <a class="btn btn-danger" asp-action="Delete" asp-controller="Movie" asp-route-id="@item.Id">Delete</a>
-                    </div>
-                </td>
-            </tr>
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Title)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Cast)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ReleaseDate)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Budget)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Rating)
+            </td>
+            <td>
+                <a class="btn btn-primary" asp-action="Download" asp-route-id="@item.Id">Download</a>
+            </td>
+            <td>
+                <a class="btn btn-info" asp-action="Details" asp-route-id="@item.Id">Details</a>
+            </td>
+            <td>
+                <div>
+                    <a class="btn btn-warning" asp-action="Edit" asp-controller="Movie" asp-route-id="@item.Id">Edit</a>
+                    <a class="btn btn-danger" asp-action="Delete" asp-controller="Movie" asp-route-id="@item.Id">Delete</a>
+                </div>
+            </td>
+        </tr>
         }
     </tbody>
 </table>
